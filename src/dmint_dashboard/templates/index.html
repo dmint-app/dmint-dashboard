@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+{% block title %}Dmint Dashboard — Pending Approvals{% endblock %}
+
+{% block content %}
+
+<div class="d-flex align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-0 fw-bold">Security Approval Dashboard</h1>
+    <p class="text-muted mb-0 small">Review and act on pending AI agent tool requests</p>
+  </div>
+</div>
+
+{# ── Stats row ─────────────────────────────────────────────────────────── #}
+<div class="row g-3 mb-4">
+
+  <div class="col-sm-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-circle bg-warning bg-opacity-10 p-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor" class="text-warning">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="fs-2 fw-bold text-warning" id="count-pending">{{ count_pending }}</div>
+          <div class="text-muted small">Pending</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-circle bg-success bg-opacity-10 p-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor" class="text-success">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <div>
+          <div class="fs-2 fw-bold text-success" id="count-approved">{{ count_approved }}</div>
+          <div class="text-muted small">Approved</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-circle bg-danger bg-opacity-10 p-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor" class="text-danger">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </div>
+        <div>
+          <div class="fs-2 fw-bold text-danger" id="count-rejected">{{ count_rejected }}</div>
+          <div class="text-muted small">Rejected</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{# ── Pending approvals table ───────────────────────────────────────────── #}
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between py-3">
+    <h2 class="h6 mb-0 fw-semibold">
+      <span class="badge bg-warning text-dark me-2" id="badge-pending-count">{{ count_pending }}</span>
+      Pending Approvals
+    </h2>
+    <a href="/audit" class="btn btn-sm btn-outline-secondary">View all history</a>
+  </div>
+
+  <div id="pending-content">
+    {% if rows %}
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" class="ps-3">Agent</th>
+              <th scope="col">Tool · Action</th>
+              <th scope="col">Resource</th>
+              <th scope="col">Created</th>
+              <th scope="col">Expires</th>
+              <th scope="col">Status</th>
+              <th scope="col" class="text-end pe-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rows %}
+            <tr>
+              <td class="ps-3">
+                <code class="text-body-secondary small">{{ row.agent_id }}</code>
+              </td>
+              <td>
+                <span class="fw-semibold">{{ row.tool }}</span>
+                <span class="text-muted">·</span>
+                <span>{{ row.action }}</span>
+              </td>
+              <td>
+                <code class="small text-truncate d-inline-block" style="max-width:180px;">
+                  {{ row.resource }}
+                </code>
+              </td>
+              <td class="text-muted small text-nowrap">{{ row.created_at }}</td>
+              <td class="text-muted small text-nowrap">{{ row.expires_at }}</td>
+              <td>
+                <span class="badge bg-{{ row.badge }}">{{ row.state }}</span>
+              </td>
+              <td class="text-end pe-3">
+                <a href="/approvals/{{ row.approval_id }}"
+                   class="btn btn-sm btn-outline-primary">Review</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% else %}
+    <div class="card-body text-center py-5">
+      <div class="text-muted">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor" class="mb-3 opacity-25">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <p class="mb-0 fw-semibold">No pending approvals</p>
+        <p class="small">All clear. No AI agent requests are waiting for review.</p>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+(function() {
+  let polling = false;
+
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function renderPending(items) {
+    const container = document.getElementById("pending-content");
+    if (!container) return;
+
+    if (!items || items.length === 0) {
+      container.innerHTML = `
+        <div class="card-body text-center py-5">
+          <div class="text-muted">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor" class="mb-3 opacity-25">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="mb-0 fw-semibold">No pending approvals</p>
+            <p class="small">All clear. No AI agent requests are waiting for review.</p>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    const rowsHtml = items.map(function(row) {
+      return `
+        <tr>
+          <td class="ps-3">
+            <code class="text-body-secondary small">${escapeHtml(row.agent_id)}</code>
+          </td>
+          <td>
+            <span class="fw-semibold">${escapeHtml(row.tool)}</span>
+            <span class="text-muted">·</span>
+            <span>${escapeHtml(row.action)}</span>
+          </td>
+          <td>
+            <code class="small text-truncate d-inline-block" style="max-width:180px;">
+              ${escapeHtml(row.resource)}
+            </code>
+          </td>
+          <td class="text-muted small text-nowrap">${escapeHtml(row.created_at)}</td>
+          <td class="text-muted small text-nowrap">${escapeHtml(row.expires_at)}</td>
+          <td>
+            <span class="badge bg-${escapeHtml(row.badge || 'warning')}">${escapeHtml(row.state)}</span>
+          </td>
+          <td class="text-end pe-3">
+            <a href="/approvals/${encodeURIComponent(row.approval_id)}"
+               class="btn btn-sm btn-outline-primary">Review</a>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    container.innerHTML = `
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th scope="col" class="ps-3">Agent</th>
+                <th scope="col">Tool · Action</th>
+                <th scope="col">Resource</th>
+                <th scope="col">Created</th>
+                <th scope="col">Expires</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="text-end pe-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  async function pollDashboard() {
+    if (polling) return;
+    if (document.visibilityState === "hidden") return;
+
+    polling = true;
+    try {
+      const response = await fetch("/api/dashboard", {
+        headers: { "Accept": "application/json" },
+        cache: "no-store"
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const data = await response.json();
+
+      const pendingEl = document.getElementById("count-pending");
+      if (pendingEl && typeof data.pending_count === "number") {
+        pendingEl.textContent = data.pending_count;
+      }
+
+      const badgeEl = document.getElementById("badge-pending-count");
+      if (badgeEl && typeof data.pending_count === "number") {
+        badgeEl.textContent = data.pending_count;
+      }
+
+      const approvedEl = document.getElementById("count-approved");
+      if (approvedEl && typeof data.approved_count === "number") {
+        approvedEl.textContent = data.approved_count;
+      }
+
+      const rejectedEl = document.getElementById("count-rejected");
+      if (rejectedEl && typeof data.rejected_count === "number") {
+        rejectedEl.textContent = data.rejected_count;
+      }
+
+      if (Array.isArray(data.pending)) {
+        renderPending(data.pending);
+      }
+    } catch (err) {
+      // Avoid noisy console errors, retry on next interval
+    } finally {
+      polling = false;
+    }
+  }
+
+  setInterval(pollDashboard, 5000);
+
+  document.addEventListener("visibilitychange", function() {
+    if (document.visibilityState === "visible") {
+      pollDashboard();
+    }
+  });
+})();
+</script>
+
+{% endblock %}

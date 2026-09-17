@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Dmint Dashboard — Audit Log{% endblock %}
+
+{% block content %}
+
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+  <div>
+    <h1 class="h3 mb-0 fw-bold">Audit Log</h1>
+    <p class="text-muted mb-0 small">All approval records from Core (newest first)</p>
+  </div>
+
+  {# Simple state filter #}
+  <form method="get" action="/audit" class="d-flex gap-2">
+    <select name="state" class="form-select form-select-sm" style="width:auto;">
+      <option value="">All states</option>
+      {% for s in all_states %}
+      <option value="{{ s }}" {% if state_filter == s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-sm btn-outline-secondary">Filter</button>
+    {% if state_filter %}
+    <a href="/audit" class="btn btn-sm btn-link text-muted">Clear</a>
+    {% endif %}
+  </form>
+</div>
+
+<div class="card border-0 shadow-sm">
+  {% if rows %}
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-striped table-hover align-middle mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th scope="col" class="ps-3">Time</th>
+            <th scope="col">Approval ID</th>
+            <th scope="col">Agent</th>
+            <th scope="col">Integration</th>
+            <th scope="col">Tool · Action</th>
+            <th scope="col">Resource</th>
+            <th scope="col">Status</th>
+            <th scope="col">Actor</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+          <tr>
+            <td class="ps-3 text-nowrap text-muted small">{{ row.timestamp }}</td>
+            <td>
+              <a href="/approvals/{{ row.approval_id }}"
+                 class="font-monospace small text-decoration-none">
+                {{ row.approval_id[:20] }}&hellip;
+              </a>
+            </td>
+            <td><code class="small">{{ row.agent_id }}</code></td>
+            <td class="text-muted small">{{ row.integration_id }}</td>
+            <td>
+              <span class="fw-semibold">{{ row.tool }}</span>
+              <span class="text-muted">·</span>
+              {{ row.action }}
+            </td>
+            <td>
+              <code class="small text-truncate d-inline-block" style="max-width:140px;">
+                {{ row.resource }}
+              </code>
+            </td>
+            <td>
+              <span class="badge bg-{{ row.badge }}">{{ row.state }}</span>
+              {% if row.state_reason %}
+              <span class="text-muted small ms-1" title="{{ row.state_reason }}">
+                &mdash; {{ row.state_reason[:40] }}{% if row.state_reason|length > 40 %}…{% endif %}
+              </span>
+              {% endif %}
+            </td>
+            <td class="text-muted small">{{ row.actor }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer text-muted small text-end">
+    Showing up to 200 records. Filter by state to narrow results.
+  </div>
+  {% else %}
+  <div class="card-body text-center py-5">
+    <p class="text-muted mb-0 fw-semibold">No records found.</p>
+    {% if state_filter %}
+    <p class="small text-muted">No approvals in state <strong>{{ state_filter }}</strong>.</p>
+    <a href="/audit" class="btn btn-sm btn-outline-secondary mt-2">Show all</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<div class="alert alert-info mt-4 small">
+  <strong>Note:</strong> This page queries Core's public API (<code>list_records()</code>).
+  The dashboard has no separate audit database.
+  All records shown are from the single Core-owned SQLite store.
+</div>
+
+{% endblock %}

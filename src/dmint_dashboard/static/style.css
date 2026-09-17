@@ -1,0 +1,25 @@
+/* Dmint Dashboard — minimal project-specific adjustments only.
+   Bootstrap 5 handles almost everything. */
+
+/* Code / monospace tweaks */
+code {
+    word-break: break-all;
+}
+
+/* Fingerprint display */
+.fingerprint-mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+}
+
+/* Tighten table cells for dense data */
+.table-dense td,
+.table-dense th {
+    padding: 0.4rem 0.6rem;
+}
+
+/* Navbar brand letter-spacing */
+.navbar-brand {
+    letter-spacing: 0.04em;
+}

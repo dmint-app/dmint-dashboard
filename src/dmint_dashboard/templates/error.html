@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Dmint Dashboard — {{ status_code }} Error{% endblock %}
+
+{% block content %}
+
+<div class="text-center py-5">
+  <div class="display-1 text-muted fw-bold">{{ status_code }}</div>
+  <h1 class="h3 mt-3">{{ detail }}</h1>
+  <a href="/" class="btn btn-outline-secondary mt-3">← Back to Dashboard</a>
+</div>
+
+{% endblock %}

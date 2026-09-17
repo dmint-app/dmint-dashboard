@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% block title %}Dmint Dashboard — Approval {{ record.approval_id[:16] }}…{% endblock %}
+
+{% block content %}
+
+{# ── Breadcrumb ──────────────────────────────────────────────────────── #}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Approval</li>
+  </ol>
+</nav>
+
+<div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-2">
+  <div>
+    <h1 class="h4 mb-0 fw-bold">Approval Details</h1>
+    <code class="text-muted small">{{ record.approval_id }}</code>
+  </div>
+  <span class="badge bg-{{ record.badge }} fs-6 px-3 py-2">{{ record.state }}</span>
+</div>
+
+{# ── Request overview card ───────────────────────────────────────────── #}
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white border-bottom py-3">
+    <h2 class="h6 fw-semibold mb-0">Request Overview</h2>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+
+      <div class="col-md-6">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item px-0">
+            <div class="text-muted small">WHO (Agent)</div>
+            <code>{{ record.agent_id }}</code>
+          </li>
+          <li class="list-group-item px-0">
+            <div class="text-muted small">WHAT (Tool · Action)</div>
+            <strong>{{ record.tool }}</strong> · {{ record.action }}
+          </li>
+          <li class="list-group-item px-0">
+            <div class="text-muted small">WHERE (Resource)</div>
+            <code>{{ record.resource }}</code>
+          </li>
+          <li class="list-group-item px-0">
+            <div class="text-muted small">Integration / Capability</div>
+            {{ record.integration_id }} / {{ record.capability_id }}
+          </li>
+        </ul>
+      </div>
+
+      <div class="col-md-6">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item px-0">
+            <div class="text-muted small">Request ID</div>
+            <code class="small">{{ record.request_id }}</code>
+          </li>
+          <li class="list-group-item px-0">
+            <div class="text-muted small">Approval ID</div>
+            <code class="small">{{ record.approval_id }}</code>
+          </li>
+          <li class="list-group-item px-0">
+            <div class="text-muted small">Created</div>
+            {{ record.created_at }}
+          </li>
+          <li class="list-group-item px-0">
+            <div class="text-muted small">Expires</div>
+            {% if record.state == 'PENDING' %}
+            <span class="text-warning fw-semibold">{{ record.expires_at }}</span>
+            {% else %}
+            {{ record.expires_at }}
+            {% endif %}
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{# ── Arguments ──────────────────────────────────────────────────────── #}
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white border-bottom py-3">
+    <h2 class="h6 fw-semibold mb-0">WITH WHAT Arguments</h2>
+    <div class="text-muted small">Treat as untrusted data — do not execute</div>
+  </div>
+  <div class="card-body p-0">
+    <pre class="bg-dark text-light p-3 rounded-bottom mb-0 overflow-auto"
+         style="font-size:0.82rem;max-height:350px;">{{ record.arguments_json }}</pre>
+  </div>
+</div>
+
+{# ── Policy provenance ──────────────────────────────────────────────── #}
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white border-bottom py-3">
+    <h2 class="h6 fw-semibold mb-0">UNDER WHICH Policy</h2>
+  </div>
+  <div class="card-body">
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item px-0">
+        <div class="text-muted small">Policy Version</div>
+        <code>{{ record.policy_version_id }}</code>
+      </li>
+      <li class="list-group-item px-0">
+        <div class="text-muted small">Policy Digest</div>
+        <code class="small">{{ record.policy_digest }}</code>
+      </li>
+      <li class="list-group-item px-0">
+        <div class="text-muted small">Evaluated At</div>
+        {{ record.policy_evaluated_at }}
+      </li>
+      <li class="list-group-item px-0">
+        <div class="text-muted small">Request Fingerprint</div>
+        <code class="small text-break">{{ record.fingerprint }}</code>
+      </li>
+    </ul>
+  </div>
+</div>
+
+{# ── Decision info (if decided) ─────────────────────────────────────── #}
+{% if record.state != 'PENDING' %}
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white border-bottom py-3">
+    <h2 class="h6 fw-semibold mb-0">Decision</h2>
+  </div>
+  <div class="card-body">
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item px-0">
+        <div class="text-muted small">Outcome</div>
+        <span class="badge bg-{{ record.badge }}">{{ record.state }}</span>
+        {% if record.state_reason %}
+        <span class="ms-2 text-muted">&mdash; {{ record.state_reason }}</span>
+        {% endif %}
+      </li>
+      {% if record.decision_at %}
+      <li class="list-group-item px-0">
+        <div class="text-muted small">Decided At</div>
+        {{ record.decision_at }}
+      </li>
+      {% endif %}
+      {% if record.authority_subject %}
+      <li class="list-group-item px-0">
+        <div class="text-muted small">Decided By</div>
+        {{ record.authority_subject }}
+        <span class="badge bg-secondary ms-1">{{ record.authority_kind }}</span>
+      </li>
+      {% endif %}
+      {% if record.consumed_at %}
+      <li class="list-group-item px-0">
+        <div class="text-muted small">Consumed At</div>
+        {{ record.consumed_at }}
+      </li>
+      {% endif %}
+    </ul>
+  </div>
+</div>
+{% endif %}
+
+{# ── Approve / Reject buttons (PENDING only) ────────────────────────── #}
+{% if record.is_pending %}
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white border-bottom py-3">
+    <h2 class="h6 fw-semibold mb-0">Decision</h2>
+    <div class="text-muted small">
+      This action is irreversible. Core will atomically record the decision.
+    </div>
+  </div>
+  <div class="card-body d-flex gap-3 flex-wrap">
+
+    {# Approve form #}
+    <form method="post"
+          action="/approvals/{{ record.approval_id }}/approve"
+          id="approveForm">
+      <button type="button" class="btn btn-success"
+              data-bs-toggle="modal" data-bs-target="#approveModal">
+        ✓ Approve
+      </button>
+    </form>
+
+    {# Reject button — opens modal #}
+    <button type="button" class="btn btn-danger"
+            data-bs-toggle="modal" data-bs-target="#rejectModal">
+      ✕ Reject
+    </button>
+
+  </div>
+</div>
+{% endif %}
+
+{# ── Approve confirmation modal ─────────────────────────────────────── #}
+{% if record.is_pending %}
+<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="approveModalLabel">Confirm Approval</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>You are about to approve the following request:</p>
+        <table class="table table-sm table-bordered">
+          <tr><th>Agent</th><td><code>{{ record.agent_id }}</code></td></tr>
+          <tr><th>Tool</th><td>{{ record.tool }} · {{ record.action }}</td></tr>
+          <tr><th>Resource</th><td><code>{{ record.resource }}</code></td></tr>
+        </table>
+        <div class="alert alert-warning py-2 small mb-0">
+          This is permanent. Core will record an atomically signed approval.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form method="post" action="/approvals/{{ record.approval_id }}/approve">
+          <button type="submit" class="btn btn-success">Confirm Approve</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── Reject modal with reason ───────────────────────────────────────── #}
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="/approvals/{{ record.approval_id }}/reject">
+        <div class="modal-header">
+          <h5 class="modal-title" id="rejectModalLabel">Reject Approval</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Rejecting approval for:</p>
+          <table class="table table-sm table-bordered">
+            <tr><th>Agent</th><td><code>{{ record.agent_id }}</code></td></tr>
+            <tr><th>Tool</th><td>{{ record.tool }} · {{ record.action }}</td></tr>
+            <tr><th>Resource</th><td><code>{{ record.resource }}</code></td></tr>
+          </table>
+          <div class="mb-3">
+            <label for="reasonInput" class="form-label fw-semibold">Reason (optional)</label>
+            <textarea class="form-control" id="reasonInput" name="reason"
+                      rows="3" maxlength="500"
+                      placeholder="e.g. Scope too broad, production resources affected…"></textarea>
+            <div class="form-text">Max 500 characters. Recorded in Core.</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Confirm Reject</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
